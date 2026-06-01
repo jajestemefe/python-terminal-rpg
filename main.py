@@ -1,7 +1,7 @@
 import time
 import os
 
-from engine import clear_screen, Colors, display_stats, print_anim, is_skip_intro
+from engine import clear_screen, Colors, display_stats, print_anim, is_skip_intro, display_intro
 from entities import Player, create_player
 from save_manager import ask_if_load
 from world import encounter_generator
@@ -63,6 +63,68 @@ def _inventory_loop(player: Player):
         time.sleep(1.8)
 
 
+# ── Death and game over ───────────────────────────────────────────────────────
+
+def _handle_game_over(player: Player, cause: str):
+    """
+    Show game over and offer restart or quit.
+    Returns (new_player, new_rooms) on restart, or (None, None) to exit the game.
+    """
+    clear_screen()
+    print_anim(f"\n{Colors.RED}*** GAME OVER ***{Colors.RESET}")
+    print_anim(f"{Colors.YELLOW}{player.name} has fallen.{Colors.RESET}")
+    print_anim(f"{cause}\n")
+    print_anim(f"{Colors.CYAN}[1] Start a new adventure")
+    print_anim(f"{Colors.CYAN}[2] Quit to title{Colors.RESET}")
+    print_anim(f"\n{Colors.YELLOW}What will you do?")
+    choice = input(f"> {Colors.RESET}").strip()
+
+    if choice == "1":
+        time.sleep(0.5)
+        is_skip_intro()
+        return create_player(), encounter_generator()
+
+    print_anim(f"\n{Colors.GREEN}Thanks for playing! Goodbye.\n{Colors.RESET}")
+    return None, None
+
+
+def _resolve_explore_encounter(player: Player, encounter) -> bool:
+    """
+    Apply an explore encounter to the player.
+    Returns False if the player died (trap or combat).
+    """
+    if isinstance(encounter, str):
+        if encounter == "empty":
+            print_anim("The room is cold and empty. You move on safely.")
+        elif encounter == "trap":
+            damage = 15
+            player.take_damage(damage)
+            print_anim(
+                f"{Colors.RED}SNAP! You stepped on a trap and took {damage} damage!{Colors.RESET}"
+            )
+            print_anim(f"Current HP: {player.health}/{player.max_health}")
+            if not player.is_alive():
+                print_anim(
+                    f"\n{Colors.RED}You collapse from your wounds. The dungeon claims another soul.{Colors.RESET}"
+                )
+                time.sleep(1.5)
+                return False
+
+    elif isinstance(encounter, dict):
+        item = encounter["item"]
+        qty = encounter["quantity"]
+        print_anim(f"{Colors.GREEN}You found a chest: {qty}x {item}!{Colors.RESET}")
+        player.inventory[item] = player.inventory.get(item, 0) + qty
+
+    else:
+        print_anim(f"A {encounter.name} blocks your path!")
+        time.sleep(1)
+        if not combat_loop(player, encounter):
+            return False
+
+    return True
+
+
 # ── Main game menu ────────────────────────────────────────────────────────────
 
 def main_menu(player: Player, rooms):
@@ -85,6 +147,13 @@ def main_menu(player: Player, rooms):
 
         # ── Explore ──────────────────────────────────────────────────────────
         if choice == "1":
+            if not player.is_alive():
+                cause = "You cannot continue with no health remaining."
+                player, rooms = _handle_game_over(player, cause)
+                if player is None:
+                    break
+                continue
+
             clear_screen()
             display_stats(player)
             print_anim("\nYou step forward into the darkness...")
@@ -92,30 +161,16 @@ def main_menu(player: Player, rooms):
 
             encounter = next(rooms)
 
-            if isinstance(encounter, str):
-                if encounter == "empty":
-                    print_anim("The room is cold and empty. You move on safely.")
-                elif encounter == "trap":
-                    damage = 15
-                    player.take_damage(damage)
-                    print_anim(
-                        f"{Colors.RED}SNAP! You stepped on a trap and took {damage} damage!{Colors.RESET}"
-                    )
-                    print_anim(f"Current HP: {player.health}/{player.max_health}")
-
-            elif isinstance(encounter, dict):
-                item  = encounter["item"]
-                qty   = encounter["quantity"]
-                print_anim(f"{Colors.GREEN}You found a chest: {qty}x {item}!{Colors.RESET}")
-                player.inventory[item] = player.inventory.get(item, 0) + qty
-
-            else:
-                print_anim(f"A {encounter.name} blocks your path!")
-                time.sleep(1)
-                survived = combat_loop(player, encounter)
-                if not survived:
-                    print_anim("\nGame Over. Restart to try again.")
+            if not _resolve_explore_encounter(player, encounter):
+                cause = (
+                    "The trap was your undoing."
+                    if isinstance(encounter, str) and encounter == "trap"
+                    else "You were slain in battle."
+                )
+                player, rooms = _handle_game_over(player, cause)
+                if player is None:
                     break
+                continue
 
             print_anim("\nPress Enter to return to the menu...")
             input()
@@ -124,7 +179,7 @@ def main_menu(player: Player, rooms):
         elif choice == "2":
             _inventory_loop(player)
 
-        # ── Inventory ────────────────────────────────────────────────────────
+        # ── Settings ─────────────────────────────────────────────────────────
         elif choice == "3":
             while True:
                 clear_screen()
@@ -134,23 +189,21 @@ def main_menu(player: Player, rooms):
                     x = f"{Colors.GREEN}ENABLED"
                 else:
                     x = f"{Colors.RED}DISABLED"
-                print_anim(f"{Colors.CYAN}[1] Animation of texts: " + x)
-                print_anim(f"{Colors.CYAN}[2] Example setting")
-
-                print_anim(f"\n{Colors.YELLOW}Press enter to return...{Colors.RESET}")
-                setting = input().strip()
+                print_anim(f"{Colors.CYAN}[1] Text animation: " + x)
+                print_anim(f"{Colors.CYAN}[2] Replay intro story")
+                print_anim(f"\n{Colors.YELLOW}Choose an option (or Enter to return){Colors.RESET}")
+                setting = input(f"> {Colors.RESET}").strip()
 
                 if setting == '1':
-                    if save_manager.animation:
-                        save_manager.animation = False
-                    else:
-                        save_manager.animation = True
+                    save_manager.animation = not save_manager.animation
 
                 elif setting == '2':
-                    save_manager.animation = True
+                    clear_screen()
+                    display_intro()
+                    print_anim(f"\n{Colors.YELLOW}Press Enter to continue...{Colors.RESET}")
+                    input()
 
                 else:
-                    time.sleep(1)
                     break
 
         # ── Save ─────────────────────────────────────────────────────────────
@@ -192,6 +245,7 @@ def main_menu(player: Player, rooms):
                     if loaded_hero:
                         player = loaded_hero
                         print_anim(f"{Colors.GREEN}\nWelcome back, {player.name}!{Colors.RESET}")
+                    # load_game prints its own error message when it returns None
                 elif save_choice:
                     print_anim(f"{Colors.RED}Invalid selection.{Colors.RESET}")
 
@@ -246,7 +300,7 @@ def main_menu(player: Player, rooms):
 
 
         else:
-            print_anim(f"\n{Colors.RED}Invalid choice. Enter a number between 1 and 7.{Colors.RESET}")
+            print_anim(f"\n{Colors.RED}Invalid choice. Enter a number between 1 and 8.{Colors.RESET}")
             time.sleep(1)
 
 

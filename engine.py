@@ -47,7 +47,7 @@ def display_intro():
     return f"""{Colors.CYAN}
         /=========================================\\
         |      WELCOME TO THE DUNGEONS OF PPY     |
-        \=========================================/
+        \\=========================================/
         | You awaken in a dark, cold room.        |
         | The smell of damp stone fills the air.  |
         | You see a skeleton lying down on the    |
@@ -65,9 +65,9 @@ def display_intro():
         | whatever you can while you still can.   |
         /=========================================\\
         | Your journey begins now...              |
-        \=========================================/
-        \n{Colors.RESET}
-        """
+        \\=========================================/
+
+{Colors.RESET}"""
 @typewriter(delay = 0.01)
 def print_anim(s: str):
     import save_manager

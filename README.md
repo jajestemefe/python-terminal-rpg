@@ -1,16 +1,106 @@
-# Python Final Project: Dungeons of PPY (Text-Based RPG)
+# Dungeons of PPY
 
-## Project Description
-"Dungeons of PPY" is a standalone, text-based Role Playing Game created for the Python Final Project. The player takes on the role of an adventurer navigating an endless dungeon. The game features an endless room generator, an inventory system, a regex-parsed combat system, and the ability to save and load progress using JSON serialization. 
+A standalone, text-based fantasy RPG built in Python. Explore an endless dungeon, fight enemies, manage inventory, and save your progress — all from the terminal.
 
-This project fulfills all technical requirements outlined in the rubric, including custom decorators, lambda functions, comprehensions, file handling, and custom exceptions.
+Created as a Python final project. The codebase demonstrates modules, OOP, decorators, generators, comprehensions, regex, JSON persistence, and custom exceptions.
 
-## Run Instructions
-To play the game, follow these steps:
+## Features
 
-1. Ensure you have Python 3.x installed on your system.
-2. Unzip the project folder.
-3. Open your terminal or command prompt and navigate to the project directory.
-4. Run the application by executing the following command:
+- **Endless dungeon** — random rooms via a generator (empty halls, traps, loot, enemies)
+- **Turn-based combat** — attack or use items; numbered shortcuts or `attack` / `use` commands (regex-parsed)
+- **Items** — potions, equippable weapons, readable books with permanent bonuses
+- **Inventory** — equip weapons, use consumables, view item descriptions
+- **Save system** — multiple JSON save slots (create, load, delete)
+- **Game over** — death from traps or combat; restart or quit
+- **Terminal UI** — ANSI colors and optional typewriter animation
+
+## Requirements
+
+- **Python 3.10+** (3.x works)
+- No third-party packages — standard library only
+- A terminal that supports **ANSI colors** (Windows Terminal, PowerShell, WSL, Linux, macOS)
+
+## How to run
+
+1. Clone or unzip the project folder.
+2. Open a terminal in the project directory.
+3. Run:
+
    ```bash
    python main.py
+   ```
+
+On first run, a `saves/` folder is created automatically for JSON save files.
+
+## How to play
+
+### Startup
+
+- If save files exist, you can load one or start a new game.
+- You may skip or watch the intro story.
+
+### Main menu
+
+| Option | Action |
+|--------|--------|
+| 1 | Explore the dungeon (next random encounter) |
+| 2 | Open inventory |
+| 3 | Settings (toggle text animation, replay intro) |
+| 4 | Save game |
+| 5 | Load game |
+| 6 | Delete save |
+| 7 | New game |
+| 8 | Quit |
+
+### Exploring
+
+- **Empty room** — safe passage
+- **Trap** — take damage (lethal at 0 HP)
+- **Chest** — add items to inventory
+- **Enemy** — enter combat
+
+### Combat
+
+- Choose a numbered action, or type commands such as `attack Goblin` or `use Health Potion`.
+- Invalid commands show a clear error message.
+- Defeating an enemy grants XP. Temporary buffs reset after each fight.
+
+### Inventory
+
+- Select an item by number to use or equip it (weapons, potions, books).
+- Equipped weapons are marked `[EQUIPPED]`.
+
+### Death
+
+- If you die from a trap or in combat, you can **start a new adventure** or **quit**.
+
+## Project structure
+
+| File | Role |
+|------|------|
+| `main.py` | Entry point, main menu, explore flow, inventory, game over |
+| `engine.py` | Screen clearing, colors, HUD, `@typewriter` decorator, intro |
+| `entities.py` | `Character`, `Player`, `Enemy` |
+| `world.py` | `encounter_generator()` — endless dungeon events |
+| `combat.py` | Combat loop, regex command parser, `InvalidCombatActionError` |
+| `item_manager.py` | `Item` hierarchy, registry, `apply_item()` |
+| `save_manager.py` | JSON save/load/delete, `SaveDataError`, startup load prompt |
+
+## Notes
+
+- **Saves** live in `saves/*.json`. Do not ship personal save files in a course zip unless your instructor asks you to.
+- **Animation** — when enabled, story text uses a typewriter effect; turn it off in Settings for faster menus.
+- **Attack power** — shown value = base stats + temporary combat buffs; saves store base stats only.
+
+## Course submission
+
+If you submit this project for grading:
+
+- Zip name: `sXXXXX_projekt.zip` (replace with your student ID).
+- Include only text files (e.g. `.py`, `.md`). Do **not** include `.venv`, `.idea`, `.git`, or `__pycache__`.
+- Incorrect zip format may cost **5 points** on the project score.
+- Test that `python main.py` runs on the machine you will use for defense.
+
+## License
+
+This project was created for educational purposes. Add a license here if you publish it publicly on GitHub.
