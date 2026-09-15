@@ -88,7 +88,7 @@ On first run, a `saves/` folder is created automatically for JSON save files.
 
 ## Notes
 
-- **Saves** live in `saves/*.json`. Do not ship personal save files in a course zip unless your instructor asks you to.
+- **Saves** are generated at runtime under `saves/*.json` and excluded from version control.
 - **Animation** — when enabled, story text uses a typewriter effect; turn it off in Settings for faster menus.
 - **Attack power** — shown value = base stats + temporary combat buffs; saves store base stats only.
 
