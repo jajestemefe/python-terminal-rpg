@@ -92,15 +92,13 @@ On first run, a `saves/` folder is created automatically for JSON save files.
 - **Animation** — when enabled, story text uses a typewriter effect; turn it off in Settings for faster menus.
 - **Attack power** — shown value = base stats + temporary combat buffs; saves store base stats only.
 
-## Course submission
+## Project Background
 
-If you submit this project for grading:
-
-- Zip name: `sXXXXX_projekt.zip` (replace with your student ID).
-- Include only text files (e.g. `.py`, `.md`). Do **not** include `.venv`, `.idea`, `.git`, or `__pycache__`.
-- Incorrect zip format may cost **5 points** on the project score.
-- Test that `python main.py` runs on the machine you will use for defense.
+I created this project independently as my first-year Python final project at
+the Polish-Japanese Academy of Information Technology. It demonstrates my use
+of Python fundamentals, object-oriented design, modular code organization,
+input validation, procedural generation, and JSON persistence.
 
 ## License
 
-This project was created for educational purposes. Add a license here if you publish it publicly on GitHub.
+This project is licensed under the [MIT License](LICENSE).
